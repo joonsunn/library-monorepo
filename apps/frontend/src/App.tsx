@@ -9,7 +9,7 @@ function App() {
   const book: Book = {
     title: 'test',
     description: 'test',
-    price: 100,
+    price: 101,
   };
 
   function handlePrintBook() {
