@@ -53,7 +53,7 @@ jobs:
     steps:
       - run: echo "Workflow triggered successfully. Checking for relevant changes..."
 
-  build:
+  project_build_successfully:
     runs-on: ubuntu-latest
     # This job *depends* on the `workflow_status_check` job to ensure the overall
     # workflow status is reported, even if `build` itself is skipped.
