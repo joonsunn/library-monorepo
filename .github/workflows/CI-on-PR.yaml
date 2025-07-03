@@ -79,8 +79,6 @@ jobs:
         # Only install if building is actually needed based on filtered paths
         if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Install Node.js
         # Only install if building is actually needed based on filtered paths
