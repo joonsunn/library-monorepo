@@ -11,58 +11,36 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-    paths:
-      # Include all the file types you DO want to trigger the workflow
-      - '**/*.ts'
-      - '**/*.tsx'
-      - '**/*.mts'
-      - '**/*.js'
-      - '**/*.jsx'
-      - '**/*.cjs'
-      - '**/*.mjs'
-      - '**/*.json'
-      # Add a catch-all positive pattern to ensure any *other* file type
-      # (that isn't explicitly excluded) still triggers the workflow for the status check.
-      # This is the key to making the required status check work.
-      - '**/*' 
-      # EXCLUDE specific file types you NEVER want to trigger the workflow
-      - '!**/*.jpg'
-      - '!**/*.jpeg'
-      - '!**/*.png'
-      - '!**/*.gif'
-      - '!**/*.bmp'
-      - '!**/*.svg'
-      - '!**/*.webp'
-      # Add any other image, video, audio, or documentation files you want to ignore
-      - '!**/*.mp4'
-      - '!**/*.mov'
-      - '!**/*.avi'
-      - '!**/*.mp3'
-      - '!**/*.wav'
-      - '!**/*.md' # Example: if you don't want to build on readme changes
-      - '!**/*.pdf'
-      - '!**/*.docx'
+    paths-ignore: # This will prevent the workflow from running AT ALL for these files
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.png'
+      - '**/*.gif'
+      - '**/*.bmp'
+      - '**/*.svg'
+      - '**/*.webp'
+      - '**/*.mp4'
+      - '**/*.mov'
+      - '**/*.avi'
+      - '**/*.mp3'
+      - '**/*.wav'
+      - '**/*.md' # Example: if you don't want to build on readme changes
+      - '**/*.pdf'
+      - '**/*.docx'
+      # Add any other static assets or documentation you want to completely ignore
 
 jobs:
-  # This job's purpose is solely to provide a status check that always runs.
-  # If the 'paths' filter prevents the 'build' job from running, this job
-  # will still execute and report a status.
-  # This is the job you set as a required status check in your branch protection rules.
-  workflow_status_check:
+  # This is the job that will provide the required status check.
+  # It will run if the workflow is not completely skipped by paths-ignore.
+  # Its main purpose is to determine if the 'build' job should proceed.
+  determine_build_relevance:
     runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true' }}
     steps:
-      - run: echo "Workflow triggered successfully. Checking for relevant changes..."
-
-  project_build_successfully:
-    runs-on: ubuntu-latest
-    # This job *depends* on the `workflow_status_check` job to ensure the overall
-    # workflow status is reported, even if `build` itself is skipped.
-    needs: workflow_status_check
-    strategy:
-      matrix:
-        node-version: [22]
-    steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2 # Checkout is needed for dorny/paths-filter to work
+        with:
+          fetch-depth: 2 # Fetch history to compare against base branch
 
       - uses: dorny/paths-filter@v3
         id: filter
@@ -73,31 +51,64 @@ jobs:
             backend:
               - 'apps/backend/**'      
             packages:
-              - 'packages/**' # Corrected path for packages
+              - '@packages/**'
+          # If no relevant files are changed, should_build will be 'false'
+
+  check_build_successful:
+    runs-on: ubuntu-latest
+    needs: determine_build_relevance # Ensure this job runs after the determination
+    # This 'if' condition will skip the entire 'build' job if no relevant changes are detected.
+    # A skipped job *is considered a success* for required status checks.
+    if: needs.determine_build_relevance.outputs.should_build == 'true'
+    strategy:
+      matrix:
+        node-version: [22]
+    steps:
+      - uses: actions/checkout@v2
 
       - name: Install pnpm
-        # Only install if building is actually needed based on filtered paths
-        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
         uses: pnpm/action-setup@v4
 
       - name: Install Node.js
-        # Only install if building is actually needed based on filtered paths
-        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install dependencies
-        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
         run: pnpm install
 
       - name: Build frontend
-        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.packages == 'true'
+        # These internal step conditions are no longer strictly necessary if the job
+        # itself is conditionally run, but they provide an extra layer of clarity
+        # and prevent running irrelevant sub-builds even if the main build job runs.
+        # However, for `pnpm install` and the individual builds, the `dorny/paths-filter`
+        # is still useful for granular control.
+        uses: dorny/paths-filter@v3 # Re-run filter within build job if needed for granular steps
+        id: build_filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend/**'
+            packages:
+              - 'packages/**'
+      
+      - name: Build backend
+        uses: dorny/paths-filter@v3
+        id: backend_filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+            packages:
+              - 'packages/**'
+
+      - name: Build frontend
+        if: steps.build_filter.outputs.frontend == 'true' || steps.build_filter.outputs.packages == 'true'
         working-directory: apps/frontend
         run: pnpm build
 
       - name: Build backend
-        if: steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
+        if: steps.backend_filter.outputs.backend == 'true' || steps.backend_filter.outputs.packages == 'true'
         working-directory: apps/backend
         run: pnpm build
