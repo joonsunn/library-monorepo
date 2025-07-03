@@ -11,7 +11,7 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-    paths-ignore: # This will prevent the workflow from running AT ALL for these files
+    paths-ignore:
       - '**/*.jpg'
       - '**/*.jpeg'
       - '**/*.png'
@@ -24,23 +24,21 @@ on:
       - '**/*.avi'
       - '**/*.mp3'
       - '**/*.wav'
-      - '**/*.md' # Example: if you don't want to build on readme changes
+      - '**/*.md'
       - '**/*.pdf'
       - '**/*.docx'
-      # Add any other static assets or documentation you want to completely ignore
 
 jobs:
-  # This is the job that will provide the required status check.
-  # It will run if the workflow is not completely skipped by paths-ignore.
-  # Its main purpose is to determine if the 'build' job should proceed.
   determine_build_relevance:
     runs-on: ubuntu-latest
     outputs:
-      should_build: ${{ steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true' }}
+      frontend_changed: ${{ steps.filter.outputs.frontend == 'true' }}
+      backend_changed: ${{ steps.filter.outputs.backend == 'true' }}
+      packages_changed: ${{ steps.filter.outputs.packages == 'true' }}
     steps:
-      - uses: actions/checkout@v2 # Checkout is needed for dorny/paths-filter to work
+      - uses: actions/checkout@v2
         with:
-          fetch-depth: 2 # Fetch history to compare against base branch
+          fetch-depth: 2
 
       - uses: dorny/paths-filter@v3
         id: filter
@@ -51,15 +49,20 @@ jobs:
             backend:
               - 'apps/backend/**'      
             packages:
-              - '@packages/**'
-          # If no relevant files are changed, should_build will be 'false'
+              - 'packages/**'
 
-  check_build_successful:
+  install_dependencies:
     runs-on: ubuntu-latest
-    needs: determine_build_relevance # Ensure this job runs after the determination
-    # This 'if' condition will skip the entire 'build' job if no relevant changes are detected.
-    # A skipped job *is considered a success* for required status checks.
-    if: needs.determine_build_relevance.outputs.should_build == 'true'
+    needs: determine_build_relevance
+    if: |
+      needs.determine_build_relevance.outputs.frontend_changed == 'true' ||
+      needs.determine_build_relevance.outputs.backend_changed == 'true' ||
+      needs.determine_build_relevance.outputs.packages_changed == 'true'
+    outputs:
+      frontend_changed: ${{ needs.determine_build_relevance.outputs.frontend_changed }}
+      backend_changed: ${{ needs.determine_build_relevance.outputs.backend_changed }}
+      packages_changed: ${{ needs.determine_build_relevance.outputs.packages_changed }}
+      node_version: ${{ matrix.node-version }}
     strategy:
       matrix:
         node-version: [22]
@@ -75,40 +78,55 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install monorepo dependencies
+        run: pnpm install --frozen-lockfile
+
+  check_frontend_build:
+    runs-on: ubuntu-latest
+    needs: [determine_build_relevance, install_dependencies]
+    if: |
+      (needs.install_dependencies.outputs.frontend_changed == 'true' || 
+       needs.install_dependencies.outputs.packages_changed == 'true')
+    strategy:
+      matrix:
+        node-version: ['${{ needs.install_dependencies.outputs.node_version }}']
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - name: Build frontend
-        # These internal step conditions are no longer strictly necessary if the job
-        # itself is conditionally run, but they provide an extra layer of clarity
-        # and prevent running irrelevant sub-builds even if the main build job runs.
-        # However, for `pnpm install` and the individual builds, the `dorny/paths-filter`
-        # is still useful for granular control.
-        uses: dorny/paths-filter@v3 # Re-run filter within build job if needed for granular steps
-        id: build_filter
-        with:
-          filters: |
-            frontend:
-              - 'apps/frontend/**'
-            packages:
-              - 'packages/**'
-      
-      - name: Build backend
-        uses: dorny/paths-filter@v3
-        id: backend_filter
-        with:
-          filters: |
-            backend:
-              - 'apps/backend/**'
-            packages:
-              - 'packages/**'
-
-      - name: Build frontend
-        if: steps.build_filter.outputs.frontend == 'true' || steps.build_filter.outputs.packages == 'true'
         working-directory: apps/frontend
         run: pnpm build
 
+  check_backend_build:
+    runs-on: ubuntu-latest
+    needs: [determine_build_relevance, install_dependencies]
+    if: |
+      (needs.install_dependencies.outputs.backend_changed == 'true' || 
+       needs.install_dependencies.outputs.packages_changed == 'true')
+    strategy:
+      matrix:
+        node-version: ['${{ needs.install_dependencies.outputs.node_version }}']
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
       - name: Build backend
-        if: steps.backend_filter.outputs.backend == 'true' || steps.backend_filter.outputs.packages == 'true'
         working-directory: apps/backend
         run: pnpm build
