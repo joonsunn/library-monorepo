@@ -35,6 +35,10 @@ jobs:
       frontend_changed: ${{ steps.filter.outputs.frontend == 'true' }}
       backend_changed: ${{ steps.filter.outputs.backend == 'true' }}
       packages_changed: ${{ steps.filter.outputs.packages == 'true' }}
+      node_version: ${{ matrix.node-version }}
+    strategy:
+      matrix:
+        node-version: [22]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -51,45 +55,16 @@ jobs:
             packages:
               - 'packages/**'
 
-  install_dependencies:
-    runs-on: ubuntu-latest
-    needs: determine_build_relevance
-    if: |
-      needs.determine_build_relevance.outputs.frontend_changed == 'true' ||
-      needs.determine_build_relevance.outputs.backend_changed == 'true' ||
-      needs.determine_build_relevance.outputs.packages_changed == 'true'
-    outputs:
-      frontend_changed: ${{ needs.determine_build_relevance.outputs.frontend_changed }}
-      backend_changed: ${{ needs.determine_build_relevance.outputs.backend_changed }}
-      packages_changed: ${{ needs.determine_build_relevance.outputs.packages_changed }}
-      node_version: ${{ matrix.node-version }}
-    strategy:
-      matrix:
-        node-version: [22]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-
-      - name: Install monorepo dependencies
-        run: pnpm install --frozen-lockfile
-
   check_frontend_build:
     runs-on: ubuntu-latest
-    needs: [determine_build_relevance, install_dependencies]
+    needs: [determine_build_relevance]
     if: |
-      (needs.install_dependencies.outputs.frontend_changed == 'true' || 
-       needs.install_dependencies.outputs.packages_changed == 'true')
+      (needs.determine_build_relevance.outputs.frontend_changed == 'true' || 
+       needs.determine_build_relevance.outputs.packages_changed == 'true')
     strategy:
       matrix:
-        node-version: ['${{ needs.install_dependencies.outputs.node_version }}']
+        node-version:
+          ['${{ needs.determine_build_relevance.outputs.node_version }}']
     steps:
       - uses: actions/checkout@v2
 
@@ -101,6 +76,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: pnpm install
 
       - name: Build frontend
         working-directory: apps/frontend
@@ -126,6 +105,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
+
+      - name: Install dependencies
+        working-directory: apps/backend
+        run: pnpm install
 
       - name: Build backend
         working-directory: apps/backend
