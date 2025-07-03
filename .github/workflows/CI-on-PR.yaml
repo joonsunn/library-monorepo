@@ -6,14 +6,13 @@ on:
       - main
       - develop
       - 'release/**'
-
     types:
       - opened
       - synchronize
       - reopened
       - ready_for_review
-
     paths:
+      # Include all the file types you DO want to trigger the workflow
       - '**/*.ts'
       - '**/*.tsx'
       - '**/*.mts'
@@ -22,10 +21,43 @@ on:
       - '**/*.cjs'
       - '**/*.mjs'
       - '**/*.json'
+      # Add a catch-all positive pattern to ensure any *other* file type
+      # (that isn't explicitly excluded) still triggers the workflow for the status check.
+      # This is the key to making the required status check work.
+      - '**/*' 
+      # EXCLUDE specific file types you NEVER want to trigger the workflow
+      - '!**/*.jpg'
+      - '!**/*.jpeg'
+      - '!**/*.png'
+      - '!**/*.gif'
+      - '!**/*.bmp'
+      - '!**/*.svg'
+      - '!**/*.webp'
+      # Add any other image, video, audio, or documentation files you want to ignore
+      - '!**/*.mp4'
+      - '!**/*.mov'
+      - '!**/*.avi'
+      - '!**/*.mp3'
+      - '!**/*.wav'
+      - '!**/*.md' # Example: if you don't want to build on readme changes
+      - '!**/*.pdf'
+      - '!**/*.docx'
 
 jobs:
+  # This job's purpose is solely to provide a status check that always runs.
+  # If the 'paths' filter prevents the 'build' job from running, this job
+  # will still execute and report a status.
+  # This is the job you set as a required status check in your branch protection rules.
+  workflow_status_check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Workflow triggered successfully. Checking for relevant changes..."
+
   build:
     runs-on: ubuntu-latest
+    # This job *depends* on the `workflow_status_check` job to ensure the overall
+    # workflow status is reported, even if `build` itself is skipped.
+    needs: workflow_status_check
     strategy:
       matrix:
         node-version: [22]
@@ -41,15 +73,25 @@ jobs:
             backend:
               - 'apps/backend/**'      
             packages:
-              - '@packages/**'
+              - 'packages/**' # Corrected path for packages
 
       - name: Install pnpm
+        # Only install if building is actually needed based on filtered paths
+        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
         uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Node.js
+        # Only install if building is actually needed based on filtered paths
+        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install dependencies
+        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
         run: pnpm install
 
       - name: Build frontend
