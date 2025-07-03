@@ -87,7 +87,7 @@ jobs:
 
   check_backend_build:
     runs-on: ubuntu-latest
-    needs: [determine_build_relevance, install_dependencies]
+    needs: [determine_build_relevance]
     if: |
       (needs.install_dependencies.outputs.backend_changed == 'true' || 
        needs.install_dependencies.outputs.packages_changed == 'true')
