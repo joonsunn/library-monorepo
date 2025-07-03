@@ -1,0 +1,63 @@
+name: CI on PR
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.mts'
+      - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.cjs'
+      - '**/*.mjs'
+      - '**/*.json'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend/**'
+            backend:
+              - 'apps/backend/**'      
+            packages:
+              - '@packages/**'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build frontend
+        if: steps.filter.outputs.frontend == 'true' || steps.filter.outputs.packages == 'true'
+        working-directory: apps/frontend
+        run: pnpm build
+
+      - name: Build backend
+        if: steps.filter.outputs.backend == 'true' || steps.filter.outputs.packages == 'true'
+        working-directory: apps/backend
+        run: pnpm build
