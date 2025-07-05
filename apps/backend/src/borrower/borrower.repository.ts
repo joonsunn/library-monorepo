@@ -22,7 +22,7 @@ export class BorrowerRepository {
   }
 
   async findAll(query?: QueryBorrowerDto): Promise<Paginated<Borrower>> {
-    const { page, pageSize, ...rest } = { page: 0, pageSize: 10, ...query };
+    const { page = 0, pageSize = 10, ...rest } = { ...query };
 
     const where: Prisma.BorrowerWhereInput = {};
 

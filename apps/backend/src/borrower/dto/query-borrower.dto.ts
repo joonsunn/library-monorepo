@@ -1,26 +1,6 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-
-export class PaginationQueryDto {
-  @ApiProperty({
-    example: 0,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  page?: number;
-
-  @ApiProperty({
-    example: 10,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  pageSize?: number;
-}
+import { PaginationQueryDto } from 'types/pagination.type';
 
 export class QueryBorrowerDto extends PaginationQueryDto {
   @ApiProperty({
