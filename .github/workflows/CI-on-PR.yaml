@@ -93,7 +93,8 @@ jobs:
        needs.determine_build_relevance.outputs.packages_changed == 'true')
     strategy:
       matrix:
-        node-version: ['${{ needs.determine_build_relevance.outputs.node_version }}']
+        node-version:
+          ['${{ needs.determine_build_relevance.outputs.node_version }}']
     steps:
       - uses: actions/checkout@v2
 
@@ -109,6 +110,10 @@ jobs:
       - name: Install dependencies
         working-directory: apps/backend
         run: pnpm install
+
+      - name: Generate @prisma
+        working-directory: apps/backend
+        run: pnpm prisma:generate
 
       - name: Build backend
         working-directory: apps/backend
