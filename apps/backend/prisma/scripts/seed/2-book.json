@@ -1,0 +1,102 @@
+[
+  {
+    "isbn": "978-3-16-148410-0",
+    "title": "Clean Code",
+    "author": "Robert C. Martin"
+  },
+  {
+    "isbn": "978-0-553-80341-7",
+    "title": "The Hitchhiker's Guide to the Galaxy",
+    "author": "Douglas Adams"
+  },
+  {
+    "isbn": "978-0-06-112008-4",
+    "title": "The Da Vinci Code",
+    "author": "Dan Brown"
+  },
+  {
+    "isbn": "978-0-553-50454-4",
+    "title": "The Girl with the Dragon Tattoo",
+    "author": "Stieg Larsson"
+  },
+  {
+    "isbn": "978-1-4000-9788-4",
+    "title": "The Nightingale",
+    "author": "Kristin Hannah"
+  },
+  {
+    "isbn": "978-0-316-12085-6",
+    "title": "The Help",
+    "author": "Kathryn Stockett"
+  },
+  {
+    "isbn": "978-0-553-38452-1",
+    "title": "The Handmaid's Tale",
+    "author": "Margaret Atwood"
+  },
+  {
+    "isbn": "978-0-316-16036-8",
+    "title": "The Guernsey Literary and Potato Peel Pie Society",
+    "author": "Mary Ann Shaffer and Annie Barrows"
+  },
+  {
+    "isbn": "978-0-553-80343-4",
+    "title": "The Restaurant at the End of the Universe",
+    "author": "Douglas Adams"
+  },
+  {
+    "isbn": "978-0-06-199067-7",
+    "title": "The Historian",
+    "author": "Elizabeth Kostova"
+  },
+  {
+    "isbn": "978-0-553-38451-7",
+    "title": "The Blind Assassin",
+    "author": "Margaret Atwood"
+  },
+  {
+    "isbn": "978-0-316-12084-9",
+    "title": "The Particular Sadness of Lemon Cake",
+    "author": "Aimee Bender"
+  },
+  {
+    "isbn": "978-0-553-80344-1",
+    "title": "Life, the Universe and Everything",
+    "author": "Douglas Adams"
+  },
+  {
+    "isbn": "978-0-316-16037-5",
+    "title": "The Guernsey Literary and Potato Peel Pie Society",
+    "author": "Mary Ann Shaffer and Annie Barrows"
+  },
+  {
+    "isbn": "978-0-553-38453-1",
+    "title": "The Power",
+    "author": "Naomi Alderman"
+  },
+  {
+    "isbn": "978-0-316-12082-5",
+    "title": "The First Fifteen Lives of Harry August",
+    "author": "Claire North"
+  },
+  {
+    "isbn": "978-0-06-199068-4",
+    "title": "The City & The City",
+    "author": "China Miéville"
+  },
+  {
+    "isbn": "978-0-553-38454-8",
+    "title": "The Song of Achilles",
+    "author": "Madeline Miller"
+  },
+  {
+    "isbn": "978-0-316-16038-2",
+    "title": "The Night Circus",
+    "author": "Erin Morgenstern"
+  },
+  {
+    "isbn": "978-0-553-38455-5",
+    "title": "The House of the Spirits",
+    "author": "Isabel Allende"
+  }
+]
