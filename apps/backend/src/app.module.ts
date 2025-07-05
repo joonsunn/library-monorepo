@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppService } from './app.service';
 import { DbModule } from './db/db.module';
 import { BorrowerModule } from './borrower/borrower.module';
+import { BookModule } from './book/book.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { BorrowerModule } from './borrower/borrower.module';
     }),
     DbModule,
     BorrowerModule,
+    BookModule,
   ],
   controllers: [AppController],
   providers: [AppService],
