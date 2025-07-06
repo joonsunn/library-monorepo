@@ -4,7 +4,6 @@ import { PaginationQueryDto } from 'types/pagination.type';
 
 export class QueryBorrowerDto extends PaginationQueryDto {
   @ApiProperty({
-    example: 'john@email.com',
     required: false,
   })
   @IsOptional()
@@ -12,7 +11,6 @@ export class QueryBorrowerDto extends PaginationQueryDto {
   email?: string;
 
   @ApiProperty({
-    example: 'joe',
     required: false,
   })
   @IsOptional()

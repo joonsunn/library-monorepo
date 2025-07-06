@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { BookCopyStatus } from '../book-copy.constant';
 
 export class CreateBookCopyDto {
   @ApiProperty({
@@ -17,4 +18,12 @@ export class CreateBookCopyDto {
   @IsString()
   @IsOptional()
   editionId?: string;
+
+  @ApiProperty({
+    example: BookCopyStatus.AVAILABLE,
+    required: false,
+  })
+  @IsEnum(BookCopyStatus)
+  @IsOptional()
+  status?: BookCopyStatus;
 }

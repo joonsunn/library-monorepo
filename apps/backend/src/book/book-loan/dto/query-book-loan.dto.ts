@@ -1,34 +1,33 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { PaginationQueryDto } from 'types/pagination.type';
-import { BookCopyStatus } from '../book-copy.constant';
 
-export class QueryBookCopyDto extends PaginationQueryDto {
+export class QueryBookLoanDto extends PaginationQueryDto {
   @ApiProperty({
     required: false,
   })
-  @IsString()
   @IsOptional()
-  isbn?: string;
-
-  @ApiProperty({
-    required: false,
-  })
   @IsString()
-  @IsOptional()
-  id?: string;
-
-  @ApiProperty({
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
   title?: string;
 
   @ApiProperty({
     required: false,
   })
-  @IsEnum(BookCopyStatus)
   @IsOptional()
-  status?: string;
+  @IsString()
+  isbn?: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  bookCopyId?: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  borrowerId?: string;
 }

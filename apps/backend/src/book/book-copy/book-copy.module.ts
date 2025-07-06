@@ -8,5 +8,6 @@ import { BookEditionModule } from '../book-edition/book-edition.module';
   imports: [BookEditionModule],
   controllers: [BookCopyController],
   providers: [BookCopyService, BookCopyRepository],
+  exports: [BookCopyService],
 })
 export class BookCopyModule {}
