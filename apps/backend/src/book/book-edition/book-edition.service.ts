@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBookEditionDto } from './dto/create-book-edition.dto';
 import { UpdateBookEditionDto } from './dto/update-book-edition.dto';
 import { BookEditionRepository } from './book-edition.repository';
-import { QueryBookEditionDto } from './dto/query-book.dto';
+import { QueryBookEditionDto } from './dto/query-book-edition.dto';
 import { FindOneOptions } from 'types/find-options.type';
-import { bookEditionPrismaErrorHelper } from './book-edition.utils';
 import { Prisma } from '@prisma/client';
+import { prismaErrorHelper } from 'src/utils/prismaErrorHelper';
 
 @Injectable()
 export class BookEditionService {
@@ -17,9 +17,7 @@ export class BookEditionService {
 
       return { message: 'OK' };
     } catch (error) {
-      bookEditionPrismaErrorHelper(
-        error as Prisma.PrismaClientKnownRequestError,
-      );
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
     }
   }
 
@@ -59,9 +57,7 @@ export class BookEditionService {
 
       return result;
     } catch (error) {
-      bookEditionPrismaErrorHelper(
-        error as Prisma.PrismaClientKnownRequestError,
-      );
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
     }
   }
 
@@ -71,9 +67,7 @@ export class BookEditionService {
 
       return result;
     } catch (error) {
-      bookEditionPrismaErrorHelper(
-        error as Prisma.PrismaClientKnownRequestError,
-      );
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
     }
   }
 }

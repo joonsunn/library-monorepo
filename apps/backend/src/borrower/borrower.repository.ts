@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client';
 import { CreateBorrowerDto } from './dto/create-borrower.dto';
 import { QueryBorrowerDto } from './dto/query-borrower.dto';
 import { UpdateBorrowerDto } from './dto/update-borrower.dto';
+import { PrismaQueryMode } from 'src/constants/prisma-helper.constant';
 
 @Injectable()
 export class BorrowerRepository {
@@ -30,7 +31,7 @@ export class BorrowerRepository {
       if (value) {
         where.OR = [
           ...(where.OR || []),
-          { [key]: { contains: value, mode: 'insensitive' } },
+          { [key]: { contains: value, mode: PrismaQueryMode.insensitive } },
         ];
       }
     }

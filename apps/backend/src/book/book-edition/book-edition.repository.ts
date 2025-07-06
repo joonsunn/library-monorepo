@@ -3,9 +3,10 @@ import { Paginated } from 'types/pagination.type';
 import { DbService } from 'src/db/db.service';
 import { Prisma } from '@prisma/client';
 import { CreateBookEditionDto } from './dto/create-book-edition.dto';
-import { QueryBookEditionDto } from './dto/query-book.dto';
+import { QueryBookEditionDto } from './dto/query-book-edition.dto';
 import { BookEdition } from './entities/book-edition.entity';
 import { UpdateBookEditionDto } from './dto/update-book-edition.dto';
+import { PrismaQueryMode } from 'src/constants/prisma-helper.constant';
 
 @Injectable()
 export class BookEditionRepository {
@@ -30,13 +31,16 @@ export class BookEditionRepository {
       if (value) {
         where.OR = [
           ...(where.OR || []),
-          { [key]: { contains: value, mode: 'insensitive' } },
+          { [key]: { contains: value, mode: PrismaQueryMode.insensitive } },
         ];
       }
     }
 
     const result = await this.bookEditionDb.findMany({
       where,
+      include: {
+        bookCopies: { select: { id: true } },
+      },
       orderBy: [
         {
           title: 'asc',

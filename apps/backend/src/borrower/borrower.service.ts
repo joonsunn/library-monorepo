@@ -9,6 +9,7 @@ import { BorrowerRepository } from './borrower.repository';
 import { QueryBorrowerDto } from './dto/query-borrower.dto';
 import { FindOneOptions } from 'types/find-options.type';
 import { prismaErrorHelper } from 'src/utils/prismaErrorHelper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BorrowerService {
@@ -26,7 +27,7 @@ export class BorrowerService {
 
       return { message: 'OK' };
     } catch (error) {
-      prismaErrorHelper(error as { code: string | undefined });
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
     }
   }
 
@@ -85,7 +86,7 @@ export class BorrowerService {
 
       return result;
     } catch (error) {
-      prismaErrorHelper(error as { code: string | undefined });
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
     }
   }
 
@@ -95,7 +96,7 @@ export class BorrowerService {
 
       return result;
     } catch (error) {
-      prismaErrorHelper(error as { code: string | undefined });
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
     }
   }
 }
