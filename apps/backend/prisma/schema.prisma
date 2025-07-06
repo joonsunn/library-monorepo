@@ -15,11 +15,12 @@ datasource db {
 }
 
 model Borrower {
-  id        String   @id() @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt()
+  id        String     @id() @default(uuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt()
   name      String
   email     String
+  bookLoans BookLoan[]
 
   @@unique(email)
   @@index(email)
@@ -43,5 +44,20 @@ model BookCopy {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @default(now()) @updatedAt()
   editionId   String
+  status      String      @default("AVAILABLE")
   bookEdition BookEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  bookLoans   BookLoan[]
+}
+
+model BookLoan {
+  id         String    @id() @default(uuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt()
+  borrowerId String
+  borrower   Borrower  @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
+  bookCopyId String
+  bookCopy   BookCopy  @relation(fields: [bookCopyId], references: [id], onDelete: Cascade)
+  returnedAt DateTime?
+
+  @@index([borrowerId, bookCopyId])
 }

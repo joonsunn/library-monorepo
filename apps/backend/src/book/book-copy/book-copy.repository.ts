@@ -27,15 +27,18 @@ export class BookCopyRepository {
   }
 
   async findAll(query?: QueryBookCopyDto): Promise<Paginated<BookCopy>> {
-    const { page = 0, pageSize = 10, ...rest } = { ...query };
+    const { page = 0, pageSize = 10, isbn, title, id, status } = { ...query };
+
+    const bookEditionQuery = { isbn, title };
+    const bookCopyQuery = { id, status };
 
     const where: Prisma.BookCopyWhereInput = {};
 
-    if (Object.keys(rest).length > 0) {
+    if (Object.keys(bookEditionQuery).length > 0) {
       where.bookEdition = {};
     }
 
-    for (const [key, value] of Object.entries(rest)) {
+    for (const [key, value] of Object.entries(bookEditionQuery)) {
       if (value) {
         if (!where.bookEdition!.OR) {
           where.bookEdition!.OR = [];
@@ -46,8 +49,22 @@ export class BookCopyRepository {
       }
     }
 
+    for (const [key, value] of Object.entries(bookCopyQuery)) {
+      if (value) {
+        if (!where.OR) {
+          where.OR = [];
+        }
+        where.OR.push({
+          [key]: { contains: value, mode: PrismaQueryMode.insensitive },
+        });
+      }
+    }
+
     const result = await this.bookCopyDb.findMany({
       where,
+      include: {
+        bookEdition: { select: { title: true } },
+      },
       orderBy: [
         {
           createdAt: 'asc',

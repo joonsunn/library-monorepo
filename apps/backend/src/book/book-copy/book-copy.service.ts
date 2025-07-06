@@ -1,10 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBookCopyDto } from './dto/create-book-copy.dto';
 import { UpdateBookCopyDto } from './dto/update-book-copy.dto';
 import { BookCopyRepository } from './book-copy.repository';
 import { QueryBookCopyDto } from './dto/query-book-copy.dto';
 import { BookEditionService } from '../book-edition/book-edition.service';
 import { BookEdition } from '../book-edition/entities/book-edition.entity';
+import { FindOneOptions } from 'types/find-options.type';
+import { prismaErrorHelper } from 'src/utils/prismaErrorHelper';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BookCopyService {
@@ -25,11 +32,15 @@ export class BookCopyService {
     if (!bookEdition)
       return new BadRequestException(`Book with isbn ${dto.isbn} not found`);
 
-    const result = await this.bookCopyRepository.create({
-      editionId: bookEdition.id,
-    });
+    try {
+      await this.bookCopyRepository.create({
+        editionId: bookEdition.id,
+      });
 
-    return result;
+      return { message: 'OK' };
+    } catch (error) {
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
+    }
   }
 
   async findAll(query?: QueryBookCopyDto) {
@@ -38,19 +49,36 @@ export class BookCopyService {
     return result;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, options?: FindOneOptions) {
+    const { throwIfNotFound } = {
+      throwIfNotFound: true,
+      ...options,
+    };
+
     const result = await this.bookCopyRepository.findOneById(id);
+
+    if (throwIfNotFound && !result) {
+      throw new NotFoundException(`Book copy with id ${id} not found`);
+    }
 
     return result;
   }
 
   async update(id: string, dto: UpdateBookCopyDto) {
-    const result = await this.bookCopyRepository.update(id, dto);
-    return result;
+    try {
+      const result = await this.bookCopyRepository.update(id, dto);
+      return result;
+    } catch (error) {
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
+    }
   }
 
   async remove(id: string) {
-    const result = await this.bookCopyRepository.remove(id);
-    return result;
+    try {
+      const result = await this.bookCopyRepository.remove(id);
+      return result;
+    } catch (error) {
+      prismaErrorHelper(error as Prisma.PrismaClientKnownRequestError);
+    }
   }
 }
