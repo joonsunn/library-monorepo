@@ -6,6 +6,8 @@ import {
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
+  type PaginationState,
+  type OnChangeFn,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -25,26 +27,28 @@ import {
   TableHeader,
   TableRow,
 } from '../table';
-import { useEffect } from 'react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  page: number;
-  pageSize: number;
-  setPage: (page: number) => void;
-  setPageSize: (pageSize: number) => void;
+  pagination: {
+    pageIndex: number;
+    pageSize: number;
+  };
+  setPagination?: OnChangeFn<PaginationState>;
+  sorting?: SortingState;
+  setSorting?: OnChangeFn<SortingState>;
   rowCount?: number;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  page,
-  pageSize,
+  pagination,
+  setPagination,
   rowCount,
-  setPage,
-  setPageSize,
+  sorting,
+  setSorting,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -52,11 +56,6 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [pagination, setPagination] = React.useState({
-    pageIndex: page,
-    pageSize,
-  });
 
   const table = useReactTable({
     data,
@@ -66,10 +65,13 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
-      pagination: { pageIndex: page, pageSize },
+      pagination: {
+        pageIndex: pagination.pageIndex,
+        pageSize: pagination.pageSize,
+      },
     },
     rowCount,
-    pageCount: rowCount ? Math.ceil(rowCount / pageSize) : undefined,
+    pageCount: rowCount ? Math.ceil(rowCount / pagination.pageSize) : undefined,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -82,13 +84,11 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     manualPagination: true,
+    manualSorting: true,
+    enableMultiSort: true,
+    isMultiSortEvent: (e) => (e as unknown as KeyboardEvent).shiftKey,
     onPaginationChange: setPagination,
   });
-
-  useEffect(() => {
-    setPage(pagination.pageIndex);
-    setPageSize(pagination.pageSize);
-  }, [pagination, setPage, setPageSize]);
 
   return (
     <div className="space-y-4">
@@ -100,12 +100,34 @@ export function DataTable<TData, TValue>({
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
+                      {header.isPlaceholder ? null : (
+                        <div
+                          className={
+                            header.column.getCanSort()
+                              ? 'cursor-pointer select-none'
+                              : ''
+                          }
+                          onClick={header.column.getToggleSortingHandler()}
+                          title={
+                            header.column.getCanSort()
+                              ? header.column.getNextSortingOrder() === 'asc'
+                                ? 'Sort ascending'
+                                : header.column.getNextSortingOrder() === 'desc'
+                                  ? 'Sort descending'
+                                  : 'Clear sort'
+                              : undefined
+                          }
+                        >
+                          {flexRender(
                             header.column.columnDef.header,
                             header.getContext(),
                           )}
+                          {{
+                            asc: ' 🔼',
+                            desc: ' 🔽',
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                      )}
                     </TableHead>
                   );
                 })}
