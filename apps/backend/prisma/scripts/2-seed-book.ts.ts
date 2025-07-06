@@ -7,32 +7,34 @@ config();
 const prisma = new PrismaClient();
 
 async function seedBook({ prisma }: { prisma: PrismaClient }) {
-  console.log(`This script will seed books`);
+  console.log(`This script will seed book editions`);
 
-  const totalExistingBooks = await prisma.book.count();
+  const bookEditionDb = prisma.bookEdition;
+
+  const totalExistingBooks = await bookEditionDb.count();
 
   if (totalExistingBooks > 0) {
     console.log(
-      `There are already ${totalExistingBooks} books in the system. Seeding operation is aborted.`,
+      `There are already ${totalExistingBooks} book editions in the system. Seeding operation is aborted.`,
     );
     return;
   }
 
   const totalBooksToCreate = booksSeedData.length;
 
-  console.log(`Books to create: ${totalBooksToCreate}`);
+  console.log(`Book editions to create: ${totalBooksToCreate}`);
 
   try {
-    const result = await prisma.book.createMany({
+    const result = await bookEditionDb.createMany({
       data: booksSeedData,
     });
 
-    console.log(`Created ${result.count} borrowers`);
+    console.log(`Created ${result.count} book editions`);
   } catch (error) {
     console.log(`Error occurred: ${error}`);
   }
 
-  console.log(`Seeding ${totalBooksToCreate} books completed`);
+  console.log(`Seeding ${totalBooksToCreate} book edition(s) completed`);
 }
 
 async function main() {

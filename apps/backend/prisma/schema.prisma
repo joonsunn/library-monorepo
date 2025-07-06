@@ -15,37 +15,33 @@ datasource db {
 }
 
 model Borrower {
-  id            String         @id() @default(uuid())
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @default(now()) @updatedAt()
-  name          String
-  email         String
-  borrowedBooks BorrowedBook[]
+  id        String   @id() @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt()
+  name      String
+  email     String
 
   @@unique(email)
   @@index(email)
 }
 
-model Book {
-  id            String         @id() @default(uuid())
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @default(now()) @updatedAt()
-  isbn          String
-  title         String
-  author        String
-  borrowedBooks BorrowedBook[]
+model BookEdition {
+  id         String     @id() @default(uuid())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now()) @updatedAt()
+  isbn       String
+  title      String
+  author     String
+  bookCopies BookCopy[]
 
+  @@unique([isbn])
   @@index([isbn])
 }
 
-model BorrowedBook {
-  id         String   @id() @default(uuid())
-  createdAt  DateTime @default(now())
-  status     String?
-  borrowerId String
-  borrower   Borrower @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
-  bookId     String
-  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-
-  @@unique([borrowerId, bookId])
+model BookCopy {
+  id          String      @id() @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now()) @updatedAt()
+  editionId   String
+  bookEdition BookEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
 }
