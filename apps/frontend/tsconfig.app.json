@@ -15,7 +15,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "outDir": "./dist",
-    "baseUrl": "./",
 
     /* Linting */
     "strict": true,
@@ -23,7 +22,12 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@packages/*": ["../../@packages/*"]
+    }
   },
   "include": ["src"]
 }
