@@ -11,7 +11,7 @@ import {
 import { BookEditionService } from './book-edition.service';
 import { CreateBookEditionDto } from './dto/create-book-edition.dto';
 import { UpdateBookEditionDto } from './dto/update-book-edition.dto';
-import { QueryBookEditionDto } from './dto/query-book.dto';
+import { QueryBookEditionDto } from './dto/query-book-edition.dto';
 
 @Controller('book-edition')
 export class BookEditionController {
