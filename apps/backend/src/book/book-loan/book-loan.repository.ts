@@ -94,15 +94,9 @@ export class BookLoanRepository {
     return result;
   }
 
-  async findOneCheckedOut({
-    bookCopyId,
-    borrowerId,
-  }: {
-    bookCopyId: string;
-    borrowerId: string;
-  }) {
+  async findOneCheckedOut({ bookCopyId }: { bookCopyId: string }) {
     const result = await this.bookLoanDb.findMany({
-      where: { bookCopyId, borrowerId, returnedAt: null },
+      where: { bookCopyId, returnedAt: null },
     });
 
     return result;

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
-export class CreateBookLoanDto {
+export class CheckOutBookDto {
   @ApiProperty({
     example: 'b3616885-90dc-4b5f-85a6-922d885b22ff',
     required: true,

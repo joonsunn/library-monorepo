@@ -14,6 +14,7 @@ import { QueryBookLoanDto } from './dto/query-book-loan.dto';
 import { BookLoan } from './entities/book-loan.entity';
 import { FindOneOptions } from 'types/find-options.type';
 import { BookCopy } from '../book-copy/entities/book-copy.entity';
+import { ReturnBookDto } from './dto/return-book.dto';
 
 @Injectable()
 export class BookLoanService {
@@ -99,7 +100,7 @@ export class BookLoanService {
     }
   }
 
-  async returnBook(dto: CreateBookLoanDto) {
+  async returnBook(dto: ReturnBookDto) {
     const bookCopy = (await this.bookCopyService.findOne(dto.bookCopyId, {
       throwIfNotFound: true,
     })) as BookCopy;
